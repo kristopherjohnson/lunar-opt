@@ -1,2 +1,7 @@
 __pycache__
 venv
+build
+lunar_wrapper.c
+lunar_wrapper.built
+*.so
+*.pyd

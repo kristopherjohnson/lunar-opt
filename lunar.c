@@ -3,9 +3,13 @@
 // by Jim Storer from FOCAL to C.
 
 #include <math.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 #include "lunar.h"
+
+// Set this non-zero to get debug output
+static int trace = 0;
 
 // Global variables
 //
@@ -25,15 +29,8 @@
 
 static double A, G, I, J, K, L, M, N, S, T, V, W, Z;
 
-static int echo_input = 0;
-
 static void update_lander_state();
 static void apply_thrust();
-
-// Input routines (substitutes for FOCAL ACCEPT command)
-static int accept_double(double *value);
-static int accept_yes_or_no();
-static void accept_line(char **buffer, size_t *buffer_length);
 
 // Given a sequence of input values, run the lunar simulation and return a
 // score.
@@ -46,6 +43,8 @@ static void accept_line(char **buffer, size_t *buffer_length);
 // For a fatal crash, score is a negative value proportional to downward speed.
 int lunar_score(int input_count, int input_value[])
 {
+    if (trace) printf("input_count=%d\n", input_count);
+
     int input_index = 0;
 
     // 01.20 in original FOCAL code
@@ -62,14 +61,13 @@ int lunar_score(int input_count, int input_value[])
     L = 0;
 
 start_turn: // 02.10 in original FOCAL code
-    // printf("%7.0f%16.0f%7.0f%15.2f%12.1f      ",
-    //         L,
-    //         trunc(A),
-    //         5280 * (A - trunc(A)),
-    //         3600 * V,
-    //         M - N);
+    if (trace) printf("%7.0f%16.0f%7.0f%15.2f%12.1f      ",
+            L,
+            trunc(A),
+            5280 * (A - trunc(A)),
+            3600 * V,
+            M - N);
 
-prompt_for_k:
     {
         //fputs("K=:", stdout);
         int is_valid_input = (input_index < input_count);
@@ -82,6 +80,7 @@ prompt_for_k:
             // For any invalid input, use zero instead.
             K = 0;
         }
+        if (trace) printf("K=:%d\n", (int)K);
     }
 
     T = 10;
@@ -153,33 +152,36 @@ on_the_moon: // 05.10 in original FOCAL code
     //printf("FUEL LEFT: %8.2f LBS\n", M - N);
     if (W <= 1)
     {
-        //puts("PERFECT LANDING !-(LUCKY)");
+        if (trace) puts("PERFECT LANDING !-(LUCKY)");
         return M - N + 16000;
     }
     else if (W <= 10)
     {
-        //puts("GOOD LANDING-(COULD BE BETTER)");
+        if (trace) puts("GOOD LANDING-(COULD BE BETTER)");
         return M - N + 8000;
     }
     else if (W <= 22)
     {
-        //puts("CONGRATULATIONS ON A POOR LANDING");
+        if (trace) puts("CONGRATULATIONS ON A POOR LANDING");
         return M - N;
     }
     else if (W <= 40)
     {
-        //puts("CRAFT DAMAGE. GOOD LUCK");
+        if (trace) puts("CRAFT DAMAGE. GOOD LUCK");
         return 0;
     }
     else if (W <= 60)
     {
-        //puts("CRASH LANDING-YOU'VE 5 HRS OXYGEN");
+        if (trace) puts("CRASH LANDING-YOU'VE 5 HRS OXYGEN");
         return 0;
     }
     else
     {
-        //puts("SORRY,BUT THERE WERE NO SURVIVORS-YOU BLEW IT!");
-        //printf("IN FACT YOU BLASTED A NEW LUNAR CRATER %8.2f FT. DEEP\n", W * .277777);
+        if (trace)
+        {
+            puts("SORRY,BUT THERE WERE NO SURVIVORS-YOU BLEW IT!");
+            printf("IN FACT YOU BLASTED A NEW LUNAR CRATER %8.2f FT. DEEP\n", W * .277777);
+        }
         return -W;
     }
 }
