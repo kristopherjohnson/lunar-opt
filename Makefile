@@ -32,10 +32,10 @@ test: venv lunar_wrapper.built
 .PHONY: test
 
 clean:
-	- $(RM) -r $(OUTPUTDIR)
-	- $(RM) -r $(BUILDDIR)
-	- $(RM) -r src/__pycache__
+	- $(RM) -r build
+	- $(RM) -r app/__pycache__
 	- $(RM) -r lunar_wrapper.built
 	- $(RM) -r lunar_wrapper.c
 	- $(RM) -r app/*.so
+	- $(RM) -r venv
 .PHONY: clean
